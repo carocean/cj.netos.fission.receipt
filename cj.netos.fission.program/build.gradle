@@ -1,0 +1,60 @@
+sourceSets {
+    main {
+        java {
+            srcDir "$projectDir/src"
+        }
+        resources {
+            srcDir "$projectDir/site-src"
+        }
+    }
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+repositories {
+}
+
+dependencies {
+    compile group: 'cj.netos.openport', name: 'cj.studio.openport', version: ref_cj_studio_openport_version
+    implementation project(':cj.netos.fission.openports')
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.3.1'
+    // https://mvnrepository.com/artifact/com.rabbitmq/amqp-client
+    compile group: 'com.rabbitmq', name: 'amqp-client', version: '5.9.0'
+// https://mvnrepository.com/artifact/com.auth0/java-jwt
+    compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+
+    compile group: 'cj.netos.rabbitmq', name: 'cj.netos.rabbitmq', version: ref_cj_netos_rabbitmq_version
+    compile group: 'org.yaml', name: 'snakeyaml', version: '1.25'
+    // https://mvnrepository.com/artifact/commons-logging/commons-logging
+    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
+}
+task copyRefembeds(type: Copy) {
+    from configurations.compileClasspath.files {
+    }
+    into 'src/cj/refembeds'
+}
+task copyReferences(type: Copy) {
+    from configurations.compileClasspath.files {
+        include 'cj.netos.fission.openports-*.jar',  'cj.studio.openport-*.jar','okhttp-*.jar',
+                'amqp-client-*.jar','cj.netos.rabbitmq-*.jar',
+                'snakeyaml-*.jar','jjwt-*.jar','jackson-*.jar'
+    }
+    into 'src/cj/references'
+}
+build.dependsOn('copyReferences')
+build.dependsOn('copyRefembeds')
+build.dependsOn(":cj.netos.fission.openports:release")
+
+task releaseToHost(dependsOn: copyReferences, type: Copy) {
+    dependsOn "build"
+    from 'build/libs/'
+    into '../cmdtools/gateway/assemblies/fission'
+    include '**/*.jar'
+    exclude '**/*-javadoc.jar', '**/*-sources.jar'
+}
+
+task release(type: Copy) {
+    dependsOn "releaseToHost"
+}
