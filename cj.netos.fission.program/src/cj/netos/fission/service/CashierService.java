@@ -46,7 +46,7 @@ public class CashierService implements ICashierService {
         if (StringUtil.isEmpty(limitTimers)) {
             limitTimers = "1";
         }
-        if (count > Integer.valueOf(limitTimers)) {
+        if (count > Integer.valueOf(limitTimers)-1) {
             String tip = String.format("今天已提现%s次，明天再提吧。快去抢更多，以待明天提更多!", count);
 //            CJSystem.logging().error(getClass(), tip);
             throw new CircuitException("800", tip);
