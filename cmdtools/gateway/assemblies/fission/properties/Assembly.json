@@ -1,7 +1,16 @@
 {
 	entryPoint : {
 		plugins: [
-
+			{
+				name:"mybatis",
+				class:"cj.studio.orm.mybatis.MyBatisPlugin",
+				parameters:{
+					classes:"[
+					]",
+					packages:"[
+					]"
+				}
+			}
 		],
 		activators: [
 			{
@@ -45,6 +54,10 @@
 			extName:".jss.js"
 		}],
 		scans : [{
+			package : "cj.studio.orm.mybatis",
+			extName : ".class|.json|.xml",
+			exoterical:"true"
+		},{
 			package : "cj.netos.fission.program",
 			extName : ".class|.json|.xml",
 			exoterical:"true"

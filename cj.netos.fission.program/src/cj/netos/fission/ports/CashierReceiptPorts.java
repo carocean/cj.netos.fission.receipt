@@ -1,5 +1,6 @@
 package cj.netos.fission.ports;
 
+import cj.netos.fission.ICashierService;
 import cj.netos.rabbitmq.IRabbitMQProducer;
 import cj.studio.ecm.annotation.CjService;
 import cj.studio.ecm.annotation.CjServiceRef;
@@ -15,8 +16,11 @@ import java.util.UUID;
 public class CashierReceiptPorts implements ICashierReceiptPorts {
     @CjServiceRef(refByName = "@.rabbitmq.producer.fission-mf")
     IRabbitMQProducer rabbitMQProducer;
+    @CjServiceRef
+    ICashierService cashierService;
     @Override
     public void withdraw(ISecuritySession session, long amount) throws CircuitException {
+        cashierService.checkWithdrawCondition(session.principal(),amount);
         AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
                 .type("/cashier/receipt.mhub")
                 .headers(new HashMap<String, Object>() {{
