@@ -2,6 +2,7 @@ package cj.netos.fission.ports;
 
 import cj.netos.fission.ICashierService;
 import cj.netos.rabbitmq.IRabbitMQProducer;
+import cj.studio.ecm.CJSystem;
 import cj.studio.ecm.annotation.CjService;
 import cj.studio.ecm.annotation.CjServiceRef;
 import cj.studio.ecm.net.CircuitException;
@@ -20,6 +21,7 @@ public class CashierReceiptPorts implements ICashierReceiptPorts {
     ICashierService cashierService;
     @Override
     public void withdraw(ISecuritySession session, long amount) throws CircuitException {
+//        CJSystem.logging().info(getClass(),String.format("%s %s欲提现%s分",session.property("nickName"),session.principal(),amount));
         cashierService.checkWithdrawCondition(session.principal(),amount);
         AMQP.BasicProperties properties = new AMQP.BasicProperties().builder()
                 .type("/cashier/receipt.mhub")

@@ -31,5 +31,8 @@
     </environments>
     <mappers>
         <mapper resource="cj/db/mappings/WithdrawRecordMapper.xml"/>
+        <mapper resource="cj/db/mappings/CashierMapper.xml"/>
+        <mapper resource="cj/db/mappings/MfSettingsMapper.xml"/>
+        <mapper resource="cj/db/mappings/CashierBalanceMapper.xml"/>
     </mappers>
 </configuration>

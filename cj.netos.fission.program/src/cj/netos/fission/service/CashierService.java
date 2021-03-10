@@ -1,9 +1,13 @@
 package cj.netos.fission.service;
 
 import cj.netos.fission.ICashierService;
+import cj.netos.fission.mapper.CashierBalanceMapper;
+import cj.netos.fission.mapper.CashierMapper;
+import cj.netos.fission.mapper.MfSettingsMapper;
 import cj.netos.fission.mapper.WithdrawRecordMapper;
-import cj.netos.fission.model.WithdrawRecordExample;
-import cj.studio.ecm.CJSystem;
+import cj.netos.fission.model.Cashier;
+import cj.netos.fission.model.CashierBalance;
+import cj.netos.fission.model.MfSettings;
 import cj.studio.ecm.IServiceSite;
 import cj.studio.ecm.annotation.CjBridge;
 import cj.studio.ecm.annotation.CjService;
@@ -11,16 +15,21 @@ import cj.studio.ecm.annotation.CjServiceRef;
 import cj.studio.ecm.annotation.CjServiceSite;
 import cj.studio.ecm.net.CircuitException;
 import cj.studio.orm.mybatis.annotation.CjTransaction;
-import cj.ultimate.util.StringUtil;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @CjBridge(aspects = "@transaction")
 @CjService(name = "cashierService")
 public class CashierService implements ICashierService {
     @CjServiceRef(refByName = "mybatis.cj.netos.fission.mapper.WithdrawRecordMapper")
     WithdrawRecordMapper withdrawRecordMapper;
+    @CjServiceRef(refByName = "mybatis.cj.netos.fission.mapper.CashierMapper")
+    CashierMapper cashierMapper;
+    @CjServiceRef(refByName = "mybatis.cj.netos.fission.mapper.CashierBalanceMapper")
+    CashierBalanceMapper cashierBalanceMapper;
+    @CjServiceRef(refByName = "mybatis.cj.netos.fission.mapper.MfSettingsMapper")
+    MfSettingsMapper mfSettingsMapper;
     @CjServiceSite
     IServiceSite site;
 
@@ -34,22 +43,27 @@ public class CashierService implements ICashierService {
         }else{
             person = principal.substring(0, pos);
         }
-        Date current = new Date(System.currentTimeMillis());
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
-        String dayText = format.format(current);
-        String begin = String.format("%s000000000", dayText);
-        String end = String.format("%s235959999", dayText);
-        WithdrawRecordExample example = new WithdrawRecordExample();
-        example.createCriteria().andWithdrawerEqualTo(person).andCtimeBetween(begin, end);
-        long count = withdrawRecordMapper.countByExample(example);
-        String limitTimers = site.getProperty("withdraw.limit.timers");
-        if (StringUtil.isEmpty(limitTimers)) {
-            limitTimers = "1";
+
+        String mfSettingsId = site.getProperty("fission.mf.settings.id");
+        MfSettings settings = mfSettingsMapper.selectByPrimaryKey(mfSettingsId);
+        Cashier cashier = cashierMapper.selectByPrimaryKey(person);
+        CashierBalance balance = cashierBalanceMapper.selectByPrimaryKey(person);
+
+        Long stayBalance = null;
+        if (cashier != null) {
+            stayBalance = cashier.getStayBalance();
         }
-        if (count > Integer.valueOf(limitTimers)-1) {
-            String tip = String.format("今天已提现%s次，明天再提吧。快去抢更多，以待明天提更多!", count);
-//            CJSystem.logging().error(getClass(), tip);
-            throw new CircuitException("800", tip);
+        if (stayBalance == null && settings != null) {
+            stayBalance = settings.getStayBalance();
+        }
+        if (stayBalance == null) {
+            stayBalance = 0L;
+        }
+        Long balanceAmount = balance == null ? 0L : balance.getBalance();
+        if (amount > balanceAmount - stayBalance) {
+            throw new CircuitException("801", String.format("不符合提现条件，您要提取的的金额%s大于可提余额:%s元。",
+                    new BigDecimal(amount).divide(new BigDecimal("100.00"), 2, RoundingMode.DOWN),
+                    new BigDecimal(balanceAmount - stayBalance).divide(new BigDecimal("100.00"), 2, RoundingMode.DOWN)));
         }
     }
 }

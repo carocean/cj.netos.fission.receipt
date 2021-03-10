@@ -100,6 +100,36 @@
     </option>
     <option name="tableInfoMap">
       <map>
+        <entry key="fission.mf#cashier">
+          <value>
+            <TableInfo>
+              <option name="database" value="fission.mf" />
+              <option name="domainName" value="Cashier" />
+              <option name="tableComment" value="出纳柜台" />
+              <option name="tableName" value="cashier" />
+            </TableInfo>
+          </value>
+        </entry>
+        <entry key="fission.mf#cashier_balance">
+          <value>
+            <TableInfo>
+              <option name="database" value="fission.mf" />
+              <option name="domainName" value="CashierBalance" />
+              <option name="tableComment" value="用户的出纳柜台&#10;只有出纳柜台上有钱才可以出金&#10;出纳柜台的钱来自于用户的裂变余额，有两种放法：&#10;- 用户手工从余额中放金到出纳柜台&#10;- 系统根据用户设定的每日出金限制放金到出纳柜台&#10;&#10;出入金&#10;- 从用户余额入金&#10;- 向点击者出金&#10;- 退回到用户余额&#10;" />
+              <option name="tableName" value="cashier_balance" />
+            </TableInfo>
+          </value>
+        </entry>
+        <entry key="fission.mf#mf_settings">
+          <value>
+            <TableInfo>
+              <option name="database" value="fission.mf" />
+              <option name="domainName" value="MfSettings" />
+              <option name="tableComment" value="交个朋友配置" />
+              <option name="tableName" value="mf_settings" />
+            </TableInfo>
+          </value>
+        </entry>
         <entry key="fission.mf#withdraw_record">
           <value>
             <TableInfo>
